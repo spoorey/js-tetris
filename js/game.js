@@ -64,7 +64,7 @@ var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
 	blob.y = 0 - blob.getHeight();
 	blob.x = Math.floor(Math.random() * width);
-	// blob.color = getRandomEntry(colors);
+	blob.color = getRandomEntry(colors);
 	blobs[blobs.length] = blob;
 	if (isDebug()) {
 		console.log('created Blob');
@@ -224,6 +224,7 @@ var Blob = function() {
 			newBlob.x = a.x + e[0];
 			newBlob.y = a.y + e[1];
 			newBlob.filledBlocks = [[0,0]];
+			newBlob.color = a.color;
 			// newBlob.color = getRandomEntry(colors);
 
 			newBlobs[newBlobs.length] = newBlob;
@@ -263,9 +264,6 @@ var MovingBlob = function() {
 			for (var w = 0; w < this.getWidth(); w++) {
 				if (blob.touchesCoordinate(w + this.x, this.getMaxY(w) + this.y + 1)) {
 					touches = true;
-					blob.color = 'red';
-					console.log(blob.getTouchedCoordinates());
-					console.log('touches at ' + w);
 				}
 			}
 		}
@@ -275,9 +273,6 @@ var MovingBlob = function() {
 
 			var newBlobs = this.split();
 			newBlobs.forEach(function(e,i) {
-				if (touches) {
-					e.color = 'yellow';
-				}
 				blobs[blobs.length] = e;
 			});
 			blobs.splice(blobs.indexOf(this), 1);
