@@ -4,11 +4,8 @@ var ctx = canvas.getContext("2d");
 
 var blobs = [];
 
-var movePiece = function() {} 
-
-setInterval(movePiece, 50);
-
-var movesPerSecond = 100;
+var movesPerSecond = 20;
+var horizontalMovesPerSecond = movesPerSecond * 5;
 var resolution = 20;
 var height = 0;
 var width = 0;
@@ -48,12 +45,27 @@ function drawBorderedRectangle(ctx, xPos, yPos, width, height, color = 'green', 
 }
 
 var nextMove = 0;
+var nextHorizontalMove = 0;
 var update = function (modifier) {
+	if (nextHorizontalMove <= Date.now()) {
+		nextHorizontalMove = Date.now() + (1000/horizontalMovesPerSecond);
+		// 37 = left; 39 = right
+		if (keysDown[37]) {
+			blobs.forEach(function(blob, i) {
+				blob.moveLeft();
+			});
+		}
+		if (keysDown[39]) {
+			blobs.forEach(function(blob, i) {
+				blob.moveRight();
+			});
+		}
+	}
 	if (nextMove <= Date.now()) {
 		nextMove = Date.now() + (1/movesPerSecond) * 1000;
 			blobs.forEach(function(e,i) {
 			e.moveDown();
-	});
+		});
 	}
 };
 
@@ -63,7 +75,7 @@ var colors = ['#00f', '#0f0', '#0ff', '#f00', '#f0f', '#ff0'];
 var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
 	blob.y = 0 - blob.getHeight();
-	blob.x = Math.floor(Math.random() * width);
+	blob.x = Math.floor(Math.random() * (width - blob.getWidth()));
 	blob.color = getRandomEntry(colors);
 	blobs[blobs.length] = blob;
 	if (isDebug()) {
@@ -225,7 +237,6 @@ var Blob = function() {
 			newBlob.y = a.y + e[1];
 			newBlob.filledBlocks = [[0,0]];
 			newBlob.color = a.color;
-			// newBlob.color = getRandomEntry(colors);
 
 			newBlobs[newBlobs.length] = newBlob;
 		});
@@ -242,12 +253,25 @@ var StoppedBlob = function() {
 	var obj = new Blob();
 	obj.nextMove = Date.now() * 1000;
 	obj.moveDown = function() {return false;};
+	obj.moveLeft = function() {return false;};
+	obj.moveRight = function() {return false;};
 	return obj;
 }
 
 var MovingBlob = function() {
 	var obj = new Blob();
 	obj.nextMove = Date.now();
+	obj.moveLeft = function() {
+		if (this.x > 0) {
+			this.x -= 1;
+		}
+	}
+	obj.moveRight = function() {
+		if (this.x < width) {
+			this.x += 1;
+		}
+	}
+
 	obj.moveDown = function() {
 		var now =  Date.now();
 		this.y += 1;
@@ -255,18 +279,15 @@ var MovingBlob = function() {
 		var maxYs = [];
 		var touches = false;
 
-		for (var i = 0; i < blobs.length; i++) {
-			var blob = blobs[i];
-			if (blob == this) {
-				continue;
-			}
 
-			for (var w = 0; w < this.getWidth(); w++) {
-				if (blob.touchesCoordinate(w + this.x, this.getMaxY(w) + this.y + 1)) {
-					touches = true;
-				}
+		var blob = null;
+		for (var w = 0; w < this.getWidth(); w++) {
+			var e = getBlobTouchingCoordinate(w + this.x, this.getMaxY(w) + this.y + 1);
+			if (null != e && this != e) {
+				blob = e;
 			}
 		}
+		var touches = (blob != null && blob != this);
 
 		if (((this.y + this.getHeight())  == height) || touches) {
 			createRandomBlob();
@@ -280,6 +301,19 @@ var MovingBlob = function() {
 	}
 
 	return obj;
+}
+
+function getBlobTouchingCoordinate(x, y) {
+	var blob = null;
+	blobs.forEach(function(e, i) {
+		if (e.touchesCoordinate(x, y)) {
+			blob = e;
+			console.log('tt');
+			return;
+		}
+	});
+
+	return blob;
 }
 
 var Square = function() {
@@ -343,6 +377,6 @@ var main = function () {
 		render();
         then = now;
 };
-// Let's play this game!
+
 var then = Date.now();
-setInterval(main, 50); // Execute as fast as possible
+setInterval(main, 1);
