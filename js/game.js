@@ -194,7 +194,7 @@ var Blob = function() {
 	obj.getMaxX = function(y) {
 		var allX = this.getAllX(y);
 		maxX = null;
-		allX.forEach(function(e) {d
+		allX.forEach(function(e) {
 			if (e > maxX) {
 				maxX = e;
 			}
@@ -324,8 +324,31 @@ var MovingBlob = function() {
 		}
 	}
 	obj.moveRight = function() {
-		if ((this.x + this.getWidth() >= width)) {
+		if ((this.x + this.getWidth()) >= canvas.width) {
+			console.log('no');
 			return false;
+		}
+	
+		var freeSpace = true;
+
+		var rightCoordinates = [];
+		for (w = 0; w < this.getHeight(); w++) {
+			var x = this.getMaxX(w);
+			if (null !== x && x >= 0 && this.x >= 1) {
+				rightCoordinates[w + this.y] = this.x + x + 1;
+			}
+		}
+
+		var a = this;
+		rightCoordinates.forEach(function(x, y)  {
+			var blob = getBlobTouchingCoordinate(x, y);
+			if (null != blob && a != blob) {
+				freeSpace = false;
+			}
+		});
+
+		if (freeSpace) {
+			this.x += 1;
 		}
 	}
 
