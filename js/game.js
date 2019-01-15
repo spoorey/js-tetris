@@ -90,16 +90,18 @@ var update = function (modifier) {
 			blobs.forEach(function(e,i) {
 			e.moveDown();
 		});
+
+		checkFloorLine();
 	}
 };
 
 var blobTypes = ['Square', 'LBlob', 'TBlob', 'Iblob', 'JBlob'];
-// var blobTypes = ['Iblob'];
+var blobTypes = ['Iblob'];
 var colors = ['#00f', '#0f0', '#0ff', '#f00', '#f0f', '#ff0'];
 var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
 	blob.y = 0 - blob.getHeight();
-	blob.x = Math.floor(Math.random() * (width - blob.getWidth()));
+	blob.x = Math.floor(Math.random() * (width - blob.getWidth() + 1));
 	blob.color = getRandomEntry(colors);
 	blobs[blobs.length] = blob;
 	if (isDebug()) {
@@ -114,6 +116,7 @@ var Blob = function() {
 	var obj = {};
 
 	obj.color = 'blue';
+	obj.type = 'blob'; 
 	obj.filledBlocks = [];
 	obj.x = 0;
 	obj.y = 0;
@@ -294,7 +297,6 @@ var Blob = function() {
 			var newBlob = new StoppedBlob();
 			newBlob.x = a.x + e[0];
 			newBlob.y = a.y + e[1];
-			newBlob.filledBlocks = [[0,0]];
 			newBlob.color = a.color;
 
 			newBlobs[newBlobs.length] = newBlob;
@@ -310,11 +312,13 @@ var Blob = function() {
 
 var StoppedBlob = function() {
 	var obj = new Blob();
+	obj.type = 'stopped';
 	obj.nextMove = Date.now() * 1000;
 	obj.moveDown = function() {return false;};
 	obj.moveLeft = function() {return false;};
 	obj.moveRight = function() {return false;};
 	obj.rotate = function() {return false;};
+	obj.filledBlocks = [[0,0]];
 	return obj;
 }
 
@@ -358,12 +362,10 @@ var MovingBlob = function() {
 		var rightCoordinates = [];
 		for (w = 0; w < this.getHeight(); w++) {
 			var x = this.getMaxX(w);
-			console.log(x);
 			if (null !== x && x >= 0 && this.x >= 1) {
 				rightCoordinates[w + this.y] = this.x + x + 1;
 			}
 		}
-		console.log(rightCoordinates);
 
 		var a = this;
 		rightCoordinates.forEach(function(x, y)  {
@@ -476,6 +478,36 @@ var JBlob = function() {
 	var obj = new MovingBlob();
 	obj.filledBlocks = [[1,0], [1,1], [1,2],  [0,2]];
 	return obj;
+}
+
+function checkFloorLine() {
+	var floorBlobs = [];
+	var floorFilled = true;
+	for (i = 0; i < width; i++) {
+		var floorBlob = getBlobTouchingCoordinate(i, height - 1);
+		if (floorBlob && floorBlob.type ==  'stopped') {
+			floorBlobs[floorBlobs.length] = floorBlob;
+		} else {
+			floorFilled = false;
+			break;
+		}
+	}
+
+	if (floorFilled) {
+		floorBlobs.forEach(function(blob) {
+			blob.filledBlocks = [];
+			var index = blobs.indexOf(blob);
+			if (index > -1) {
+			  blobs.splice(index, 1);
+			}
+		});
+
+		blobs.forEach(function(blob) {
+			if (blob.type == 'stopped') {
+				blob.y += 1;
+			}
+		})
+	}
 }
 
 var render = function () {
