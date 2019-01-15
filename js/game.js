@@ -96,7 +96,7 @@ var update = function (modifier) {
 };
 
 var blobTypes = ['Square', 'LBlob', 'TBlob', 'Iblob', 'JBlob'];
-var blobTypes = ['Iblob'];
+// var blobTypes = ['Iblob'];
 var colors = ['#00f', '#0f0', '#0ff', '#f00', '#f0f', '#ff0'];
 var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
@@ -480,7 +480,18 @@ var JBlob = function() {
 	return obj;
 }
 
+var OneBlob = function() {
+	var obj = new MovingBlob();
+	obj.filledBlocks = [[0,0]];
+	return obj;
+}
+
+var timeOutActive = false;
 function checkFloorLine() {
+	if (timeOutActive) {
+		return;
+	}
+
 	var floorBlobs = [];
 	var floorFilled = true;
 	for (i = 0; i < width; i++) {
@@ -492,21 +503,36 @@ function checkFloorLine() {
 			break;
 		}
 	}
+	var moveBlobs = [];
+	blobs.forEach(function(blob) {
+		if (blob.type == 'stopped') {
+			moveBlobs.push(blob);
+		}
+	});
+
 
 	if (floorFilled) {
 		floorBlobs.forEach(function(blob) {
-			blob.filledBlocks = [];
-			var index = blobs.indexOf(blob);
-			if (index > -1) {
-			  blobs.splice(index, 1);
-			}
+			blob.color = '#fff';
 		});
+		var timeOutFunction = function() {
+			floorBlobs.forEach(function(blob) {
+				blob.filledBlocks = [];
+				var index = blobs.indexOf(blob);
+				if (index > -1) {
+					blobs.splice(index, 1);
+				}
+			});
 
-		blobs.forEach(function(blob) {
-			if (blob.type == 'stopped') {
-				blob.y += 1;
-			}
-		})
+			blobs.forEach(function(blob) {
+				if (blob.type == 'stopped') {
+					blob.y += 1;
+				}
+			});
+			timeOutActive = false;
+		};
+		setTimeout(timeOutFunction, 1.5*(nextMove - Date.now()));
+		timeOutActive = true;
 	}
 }
 
