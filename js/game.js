@@ -15,6 +15,7 @@ function horizontalMovesPerSecond() {
 var nextMove = 0;
 var nextHorizontalMove = 0;
 
+var rotateActive = true;
 var resolution = 20;
 var height = 0;
 var width = 0;
@@ -54,6 +55,18 @@ function drawBorderedRectangle(ctx, xPos, yPos, width, height, color = 'green', 
 }
 
 var update = function (modifier) {
+	if (!keysDown[38]) {
+		rotateActive = true;
+	}
+
+	if (keysDown[38] && rotateActive) {
+		blobs.forEach(function(blob, i) {
+			blob.rotate();
+		});
+
+		rotateActive = false;
+	}
+
 	if (keysDown[40]) {
 		nextMove = nextHorizontalMove;
 	}
@@ -180,7 +193,7 @@ var Blob = function() {
 	}
 
 	obj.getMaxY = function(x) {
-		var allY = this.getAllX();
+		var allY = this.getAllY(x);
 		maxY = null;
 		allY.forEach(function(e) {
 			if (e > maxY) {
@@ -301,6 +314,7 @@ var StoppedBlob = function() {
 	obj.moveDown = function() {return false;};
 	obj.moveLeft = function() {return false;};
 	obj.moveRight = function() {return false;};
+	obj.rotate = function() {return false;};
 	return obj;
 }
 
@@ -386,6 +400,18 @@ var MovingBlob = function() {
 			});
 			blobs.splice(blobs.indexOf(this), 1);
 		}
+	}
+
+	obj.rotate = function() {
+		var a = this;
+		var oldBlocks = this.filledBlocks;
+		var newBlocks = [];
+	
+		oldBlocks.forEach(function(e) {
+			newBlocks[newBlocks.length] = [a.getHeight() - e[1] - 1, e[0]];
+		});
+	
+		this.filledBlocks = newBlocks;
 	}
 
 	obj.getBlobRightBelow = function() {
