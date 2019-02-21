@@ -16,7 +16,7 @@ var nextMove = 0;
 var nextHorizontalMove = 0;
 
 var rotateActive = true;
-var resolution = 20;
+var resolution = 30;
 var height = 0;
 var width = 0;
 height = Math.floor((document.documentElement.clientHeight * 0.75) / resolution);
@@ -91,12 +91,13 @@ var update = function (modifier) {
 			e.moveDown();
 		});
 
-		checkFloorLine();
+		for (var i = height - 1; i >= 0; i--) {
+			checkFullLine(i);
+		}
 	}
 };
 
 var blobTypes = ['Square', 'LBlob', 'TBlob', 'Iblob', 'JBlob'];
-// var blobTypes = ['Iblob'];
 var colors = ['#00f', '#0f0', '#0ff', '#f00', '#f0f', '#ff0'];
 var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
@@ -487,7 +488,7 @@ var OneBlob = function() {
 }
 
 var timeOutActive = false;
-function checkFloorLine() {
+function checkFullLine(y) {
 	if (timeOutActive) {
 		return;
 	}
@@ -495,7 +496,7 @@ function checkFloorLine() {
 	var floorBlobs = [];
 	var floorFilled = true;
 	for (i = 0; i < width; i++) {
-		var floorBlob = getBlobTouchingCoordinate(i, height - 1);
+		var floorBlob = getBlobTouchingCoordinate(i, y);
 		if (floorBlob && floorBlob.type ==  'stopped') {
 			floorBlobs[floorBlobs.length] = floorBlob;
 		} else {
@@ -503,36 +504,38 @@ function checkFloorLine() {
 			break;
 		}
 	}
+
 	var moveBlobs = [];
 	blobs.forEach(function(blob) {
-		if (blob.type == 'stopped') {
+		if (floorFilled && blob.type == 'stopped' && blob.y < (y)) {
+			//blob.color = '#000';
 			moveBlobs.push(blob);
 		}
 	});
-
 
 	if (floorFilled) {
 		floorBlobs.forEach(function(blob) {
 			blob.color = '#fff';
 		});
+		timeOutActive = true;
 		var timeOutFunction = function() {
-			floorBlobs.forEach(function(blob) {
-				blob.filledBlocks = [];
-				var index = blobs.indexOf(blob);
-				if (index > -1) {
-					blobs.splice(index, 1);
+			var remaining = [];
+			moveBlobs.forEach(function(blob) {
+				blob.y += 1;
+			});
+			blobs.forEach(function(blob) {
+				if (floorBlobs.indexOf(blob) == -1) {
+					remaining[remaining.length] = blob;
+					return;
 				}
+				blob.filledBlocks = [];
+				blob.color = '#ccc';
 			});
 
-			blobs.forEach(function(blob) {
-				if (blob.type == 'stopped') {
-					blob.y += 1;
-				}
-			});
+			blobs = remaining;
 			timeOutActive = false;
 		};
-		setTimeout(timeOutFunction, 1.5*(nextMove - Date.now()));
-		timeOutActive = true;
+		setTimeout(timeOutFunction, 1.5*(nextHorizontalMove - Date.now()));
 	}
 }
 
