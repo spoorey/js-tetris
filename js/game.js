@@ -541,7 +541,7 @@ function checkFullLine(y) {
 
 var render = function () {
         ctx.fillStyle = "blue";
-        ctx.font = "24px Helvetica";
+        ctx.font = "45px Helvetica";
         ctx.textAlign = "left";
 		ctx.textBaseline = "top";
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -554,6 +554,8 @@ var render = function () {
 // The main game loop
 var main = function () {
 		if (document.getElementById('pause').checked) {
+			ctx.fillStyle = '#000';
+			ctx.fillText('Pause', canvas.width / 2 - 60, canvas.height / 2);
 			return;
 		}
         var now = Date.now();
