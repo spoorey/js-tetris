@@ -3,6 +3,7 @@ var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 var blobs = [];
+var nextBlobId = 1;
 
 function movesPerSecond() {
 	return parseInt(document.getElementById('movesPerSecond').value);
@@ -121,7 +122,9 @@ var Blob = function() {
 	obj.filledBlocks = [];
 	obj.x = 0;
 	obj.y = 0;
+	obj.id = nextBlobId ++;
 
+	console.log(obj.id);
 	obj.getHeight = function() {
 		var minY = 0;
 		var maxY = 0;
@@ -383,16 +386,13 @@ var MovingBlob = function() {
 
 	obj.moveDown = function() {
 		var now =  Date.now();
-		if (!this.getBlobRightBelow()) {
-			this.y += 1;
-		}
 
 		this.nextMove = now + (1000/movesPerSecond());
 		var maxYs = [];
 		var touches = false;
 
 		var blob = this.getBlobRightBelow();
-		var touches = (blob != null && blob != this);
+		var touches = (blob != null && blob.id != this.id);
 
 		if (((this.y + this.getHeight())  == height) || touches) {
 			createRandomBlob();
@@ -402,19 +402,41 @@ var MovingBlob = function() {
 				blobs[blobs.length] = e;
 			});
 			blobs.splice(blobs.indexOf(this), 1);
+		} else {
+			this.y += 1;
 		}
 	}
 
 	obj.rotate = function() {
-		var a = this;
 		var oldBlocks = this.filledBlocks;
 		var newBlocks = [];
+		var a = this;
 	
 		oldBlocks.forEach(function(e) {
 			newBlocks[newBlocks.length] = [a.getHeight() - e[1] - 1, e[0]];
 		});
 	
 		this.filledBlocks = newBlocks;
+		var validRotate = true;
+		this.getTouchedCoordinates().forEach(function(c) {
+			var x = c[0];
+			var y = c[1];
+			var blob = getBlobTouchingCoordinate(x, y);
+			if (blob != null && blob.id != a.id) {
+				validRotate = false;
+				return;
+			}
+
+			if (x > width || y >= height || x < 0) {
+				validRotate = false;
+				console.log('xy');
+				return;
+			}
+		});
+
+		if (!validRotate) {
+			this.filledBlocks = oldBlocks;
+		}
 	}
 
 	obj.getBlobRightBelow = function() {
