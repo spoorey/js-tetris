@@ -428,7 +428,6 @@ var MovingBlob = function() {
 			}
 
 			if (x >= width || y >= height || x < 0) {
-				console.log('nono');
 				validRotate = false;
 				return;
 			}
