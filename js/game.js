@@ -427,7 +427,8 @@ var MovingBlob = function() {
 				return;
 			}
 
-			if (x > width || y >= height || x < 0) {
+			if (x >= width || y >= height || x < 0) {
+				console.log('nono');
 				validRotate = false;
 				return;
 			}
