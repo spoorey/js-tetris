@@ -124,7 +124,6 @@ var Blob = function() {
 	obj.y = 0;
 	obj.id = nextBlobId ++;
 
-	console.log(obj.id);
 	obj.getHeight = function() {
 		var minY = 0;
 		var maxY = 0;
@@ -566,7 +565,20 @@ var render = function () {
         ctx.textAlign = "left";
 		ctx.textBaseline = "top";
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		
+
+		for (var x = 0; x <= width; x++) {
+			ctx.beginPath();
+			ctx.moveTo(x*resolution, 0);
+			ctx.lineTo(x*resolution, height*resolution);
+			ctx.stroke();
+		}
+
+		for (var y = 0; y <= height; y++) {
+			ctx.beginPath();
+			ctx.moveTo(0, y*resolution);
+			ctx.lineTo(width*resolution, y*resolution);
+			ctx.stroke();
+		}
 		blobs.forEach(function(e,i) {
 			e.render(ctx);
 		});
