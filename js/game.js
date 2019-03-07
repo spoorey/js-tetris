@@ -98,7 +98,15 @@ var update = function (modifier) {
 	}
 };
 
-var blobTypes = ['Square', 'LBlob', 'TBlob', 'Iblob', 'JBlob'];
+var blobTypes = [
+	'Square',
+	'LBlob',
+	'TBlob',
+	'Iblob',
+	'JBlob',
+	'ZBlob',
+	'SBlob',
+];
 var colors = ['#00f', '#0f0', '#0ff', '#f00', '#f0f', '#ff0'];
 var createRandomBlob = function() {
 	var blob = new window[getRandomEntry(blobTypes)]();
@@ -498,6 +506,18 @@ var TBlob = function() {
 var JBlob = function() {
 	var obj = new MovingBlob();
 	obj.filledBlocks = [[1,0], [1,1], [1,2],  [0,2]];
+	return obj;
+}
+
+var ZBlob = function() {
+	var obj = new MovingBlob();
+	obj.filledBlocks = [[0,0], [1,0], [1,1],[2,1]];
+	return obj;
+}
+
+var SBlob = function() {
+	var obj = new MovingBlob();
+	obj.filledBlocks = [[0,1], [1,0], [1,1],[2,0]];
 	return obj;
 }
 
